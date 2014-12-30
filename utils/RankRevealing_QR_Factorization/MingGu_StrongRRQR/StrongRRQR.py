@@ -1,65 +1,25 @@
 #/bin/python
+import os;
 import sys;
+golub_dir  = os.path.split(os.path.realpath(__file__))[0]+"/../Golub_RRQR";
+sys.path.append(golub_dir);
+#When as standalone program 
+util_dir1  = os.path.split(os.path.realpath(__file__))[0]+"/../utils/Python_Utils";
+sys.path.append(util_dir1);
+#When as external module
+util_dir2  = os.path.split(os.path.realpath(__file__))[0]+"/../../Python_Utils";
+sys.path.append(util_dir1);
 from numpy import *;
-import numpy as np;
 from math  import *;
-sys.path.append("../Golub_RRQR");
-import Golub_RRQR
+from Matrix_Utils import *;
+from Float_Utils import *;
 import HouseHolder
+import numpy as np;
 
 np.random.seed(0);
 
 Debug=False;
 
-def equals_matrix(M1,M2):
-    if 2 == M1.ndim: 
-        if M1.shape != M2.shape:
-            return False;
-        r,c = M1.shape;
-        for i in xrange(r):
-            for j in xrange(c):
-                if abs(M1[i,j] - M2[i,j]) >= 1e-9:
-                    return False;
-        return True;
-
-    elif 1 == M1.ndim:
-        if M1.shape != M2.shape:
-            return False;
-        r = M1.shape[0];
-        for i in xrange(r):
-            if abs(M1[i] - M2[i]) >= 1e-9:
-                return False;
-        return True;
-
-    else:
-        raise Exception("equals_matrix function not support ndim = %d"%(M1.ndim));
-    
-
-def show_matrix(M):
-    if 2 == M.ndim:
-        r,c = M.shape;
-        for i in xrange(r):
-            for j in xrange(c):
-                if M[i,j] >= 0:
-                    print " %.3f\t"%M[i,j],
-                else:
-                    print "%.3f\t"%M[i,j],
-            print "";
-    elif 1 == M.ndim:
-        l = len(M);
-        for i in xrange(l):
-            if M[i] >= 0:
-                print " %.3f\t"%M[i],
-            else:
-                print "%.3f\t"%M[i],
-        print "";
-    else:
-        raise Exception("show_matrix not support ndim=%d yet"%M.ndim);
-
-def gt(f1,f2):
-    return f1-f2 > 1e-6;
-def lt(f1,f2):
-    return f2-f1 > 1e-6;    
 
 def check_final(R,k,f=1.414):
     r,c = R.shape;
@@ -93,11 +53,11 @@ def check_final(R,k,f=1.414):
         print "k:",k;
         print "pkn:",pkn;
         print "sigma_R:";
-        show_matrix(sigma_R);
+        matrix_show(sigma_R);
         print "sigma_Ak:";
-        show_matrix(sigma_Ak);
+        matrix_show(sigma_Ak);
         print "sigma_Ck:";
-        show_matrix(sigma_Ck);
+        matrix_show(sigma_Ck);
     
 
     print "final check ends\n";
@@ -119,11 +79,11 @@ def check_step(R, invA_B, omega, gamma, k):
         for j in xrange(k):
             check_omega[i] += invAk[i][j] * invAk[i][j];
         check_omega[i] = math.sqrt(check_omega[i]);
-    if not equals_matrix(check_omega, omega):
+    if not is_matrix_equals(check_omega, omega):
         print "omega:";
-        show_matrix(omega);
+        matrix_show(omega);
         print "check_omega:";
-        show_matrix(check_omega);
+        matrix_show(check_omega);
         isPass  = False;
 
     a = check_gamma = array([0.0 for i in xrange(c)]);
@@ -131,19 +91,19 @@ def check_step(R, invA_B, omega, gamma, k):
         for i in xrange(k,r):
             check_gamma[j] += R[i,j] * R[i,j];
         check_gamma[j] = math.sqrt(check_gamma[j]);
-    if not equals_matrix(check_gamma, gamma):
+    if not is_matrix_equals(check_gamma, gamma):
         print "gamma:";
-        show_matrix(gamma);
+        matrix_show(gamma);
         print "check_gamma:";
-        show_matrix(check_gamma);
+        matrix_show(check_gamma);
         isPass = False;
 
     check_invA_B =  dot(linalg.inv(Ak),Bk);    
-    if not equals_matrix(invA_B, check_invA_B):
+    if not is_matrix_equals(invA_B, check_invA_B):
         print "invA_B:";
-        show_matrix(invA_B);
+        matrix_show(invA_B);
         print "check_invA_B:";
-        show_matrix(check_invA_B);
+        matrix_show(check_invA_B);
         isPass = False;
 
     print "end check";
@@ -152,18 +112,22 @@ def check_step(R, invA_B, omega, gamma, k):
 
 def show_step(R, invA_B, omega, gamma, k):
     print "R:"
-    show_matrix(R);
+    matrix_show(R);
     print "gamma:"
-    show_matrix(gamma);
+    matrix_show(gamma);
     print "omega:"
-    show_matrix(omega); 
+    matrix_show(omega); 
     print "";
 
 
 
-def rrqr(M, k, f=1.414):
-    R,PI = Golub_RRQR.rrqr(M,0.0001);
-    m,n  = R.shape;
+def rrqr(R, k, f=1.414):
+    m,n = R.shape;
+
+    for i in xrange(k+1):
+        R = HouseHolder.HouseHolder_step(R, i)     
+    PI   = array(range(n));
+
     Ak   = R[0:k,  0:k];
     Bk   = R[0:k,  k:n]; 
     invA = linalg.inv(Ak);
@@ -188,35 +152,34 @@ def rrqr(M, k, f=1.414):
 
     flag,i,j = is_rho_less_f(invA_B, omega, gamma, k, f);
     while not flag:
-        R, invA_B, omega, gamma =  \
-        update_swap_k_kplusj(R, invA_B, omega, gamma, k, j);
+        R, PI, invA_B, omega, gamma =  \
+        update_swap_k_kplusj(R, PI, invA_B, omega, gamma, k, j);
         if True == Debug:
             print "swap_k_kplusj: j = ",j,"  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
             show_step(R, invA_B, omega, gamma, k);
             if not check_step(R, invA_B, omega, gamma, k):
                 print "Test fails. Please debug this matrix:";
-                show_matrix(M);
+                matrix_show(M);
                 exit(0);
 
-        R, invA_B, omega, gamma =  \
-        update_shift(R, invA_B, omega, gamma, i, k);
- 
+        R, PI, invA_B, omega, gamma =  \
+        update_shift(R, PI, invA_B, omega, gamma, i, k);
         if True == Debug:
             print "shift:i = ",i, "   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
             show_step(R, invA_B, omega, gamma,k);
             if not check_step(R, invA_B, omega, gamma, k):
                 print "Test fails. Please debug this matrix:";
-                show_matrix(M);
+                matrix_show(M);
                 exit(0);                
 
-        R, invA_B, omega, gamma =  \
-        update_swap_kminus1_k(R, invA_B, omega, gamma,k);           
+        R, PI, invA_B, omega, gamma =  \
+        update_swap_kminus1_k(R, PI, invA_B, omega, gamma,k);           
         if True == Debug:
             print "swap_kminus1_k  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
             show_step(R, invA_B, omega, gamma, k);
             if not check_step(R, invA_B, omega, gamma, k):
                 print "Test fails. Please debug this matrix:";
-                show_matrix(M);
+                matrix_show(M);
                 exit(0);
 
         flag, i, j = is_rho_less_f(invA_B, omega, gamma, k ,f); 
@@ -224,9 +187,9 @@ def rrqr(M, k, f=1.414):
     if True == Debug:
         if not check_final(R, k, f):
             print "Test fails. Please debug this matrix:";
-            show_matrix(M);
+            matrix_show(M);
             exit(0);
-    return R;
+    return R, PI;
 
 
 def is_rho_less_f(invA_B, omega, gamma, k, f=1.414):    
@@ -242,11 +205,16 @@ def is_rho_less_f(invA_B, omega, gamma, k, f=1.414):
         
 
 
-def update_swap_k_kplusj(R, invA_B, omega, gamma, k, j): 
+def update_swap_k_kplusj(R, PI, invA_B, omega, gamma, k, j): 
+
     #swap column k and column k + j;  
     row,col = R.shape; 
     if j == 0 or k+j >= col:
-        return R, invA_B, omega, gamma,;
+        return R, PI, invA_B, omega, gamma,;
+
+    tmp     = copy(PI[k]);
+    PI[k]   = PI[k+j];
+    PI[k+j] = tmp;
 
     tmp             = copy(R[:,k:k+1]);
     R[:,k:k+1]      = R[:,k+j:k+j+1];
@@ -273,12 +241,18 @@ def update_swap_k_kplusj(R, invA_B, omega, gamma, k, j):
     invA_B[:,j:j+1] =  invA_B[:,0:1];
     invA_B[:,0:1]   =  tmp;
     
-    return R, invA_B , omega, gamma;
+    return R, PI, invA_B , omega, gamma;
 
-def update_shift(R, invA_B, omega, gamma, i, k):
+def update_shift(R, PI, invA_B, omega, gamma, i, k):
     #4.2
     m,n = R.shape;
-    if i >= k:   return R, invA_B, omega, gamma
+    if i >= k:   return R, PI, invA_B, omega, gamma
+
+    tmp = copy(PI[i]);
+    for idx in xrange(i,k-1):
+        PI[idx] = PI[idx+1];
+    PI[k-1] = tmp;
+    
     tmp = copy(R[0:k,i:i+1]);
     for idx in xrange(i,k-1):
         R[0:k, idx:idx+1] = R[0:k, idx+1:idx+2];
@@ -306,10 +280,14 @@ def update_shift(R, invA_B, omega, gamma, i, k):
         invA_B[idx:idx+1,:] = invA_B[idx+1:idx+2,:];
     invA_B[k-1:k,:] = tmp;
     
-    return R, invA_B, omega, gamma;
+    return R, PI, invA_B, omega, gamma;
 
  
-def update_swap_kminus1_k(R,invA_B, omega,gamma,k):
+def update_swap_kminus1_k(R,PI,invA_B, omega,gamma,k):
+    tmp     = copy(PI[k-1]);
+    PI[k-1] = PI[k];
+    PI[k]   = tmp;
+
     row,col = R.shape;
     r  = R[k-1][k-1];
     print r;
@@ -320,13 +298,13 @@ def update_swap_kminus1_k(R,invA_B, omega,gamma,k):
     test_code='''
     print "before update_swap_kminus1_k";
     print "R:";
-    show_matrix(R);
+    matrix_show(R);
     print "invA_B";
-    show_matrix(invA_B);
+    matrix_show(invA_B);
     print "omega:";
-    show_matrix(omega);
+    matrix_show(omega);
     print "gamma:";
-    show_matrix(gamma);'''    
+    matrix_show(gamma);'''    
 
 
     invA_B_r,invA_B_c = invA_B.shape;
@@ -339,17 +317,17 @@ def update_swap_kminus1_k(R,invA_B, omega,gamma,k):
 
     test_code='''
     print "Akminus1:";
-    show_matrix(Akminus1);
+    matrix_show(Akminus1);
     print "b1";
-    show_matrix(b1);
+    matrix_show(b1);
     print "u:";
-    show_matrix(u);
+    matrix_show(u);
     print "u1:";
-    show_matrix(u1);
+    matrix_show(u1);
     print "u2:";
-    show_matrix(u2);
+    matrix_show(u2);
     print "U:";
-    show_matrix(U);'''
+    matrix_show(U);'''
 
     #R and gamma
     tmp             = copy(R[0:k-1, k-1:k])
@@ -385,7 +363,7 @@ def update_swap_kminus1_k(R,invA_B, omega,gamma,k):
     new_invA_B[k-1:k, 1:invA_B_col]  = copy(R[k-1:k, k+1:col])/hatr;
     new_invA_B[0:k-1, 0:1         ]  = (nu*nu*u - mu*u1)/lou/lou;
     new_invA_B[0:k-1, 1:invA_B_col]  = U + (nu*dot(u,c2) - dot(u1,c1)) / hatr; 
-    return R, new_invA_B, omega, gamma;    
+    return R, PI, new_invA_B, omega, gamma;    
 
 if __name__ == "__main__":
     Debug = True;

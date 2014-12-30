@@ -2,11 +2,14 @@
 import os;
 import sys;
 
-util_dir = os.path.split(os.path.realpath(__file__))[0]+"/../Python_Utils";
+util_dir = os.path.split(os.path.realpath(__file__))[0]+"/../utils/Python_Utils";
+rrqr_dir = os.path.split(os.path.realpath(__file__))[0]+"/../utils/RankRevealing_QR_Factorization/MingGu_StrongRRQR";
 sys.path.append(util_dir);
+sys.path.append(rrqr_dir);
 
 from numpy import *;
 from Roulette import *;
+from StrongRRQR import *;
 
 #def css(M,k):
 
@@ -43,9 +46,10 @@ def randomized_stage(A, k, vt, p, c):
             vkts1d1[r,t] = vt[r,i] * D1[t,t];
 
 
-    return VktS1D1, S1, D1;
+    return vkts1d1, S1, D1;
 
 
 def deterministic_stage(vts1d1,k):
+    StrongRRQR.rrqr(vts1d1,k);
     
 

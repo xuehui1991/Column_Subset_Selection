@@ -1,11 +1,20 @@
 #!/bin/python2
+import os;
+import sys;
+util_dir = os.path.split(os.path.realpath(__file__))[0]+"/../utils/Python_Utils";
+sys.path.append(util_dir);
+
+
 from numpy import *;
 from Boutsidis import *;
+from Matrix_Utils import *;
 import numpy as np;
+
 
 if __name__ == "__main__":
     testM = array([[1,2,3,4],[0,2,3,4],[0,0,3,4],[0,0,3,4]]);
     testM = testM*5;
+    k     = 1;
     u,d,vt = linalg.svd(testM);
     print "testM:";
     print testM;
@@ -22,3 +31,15 @@ if __name__ == "__main__":
     print p;
     print "c:";
     print c;
+
+    print "Randomized Stage:";
+    vkts1d1,s1,d1 = randomized_stage(testM, k, vt, p, c);
+    print "vkts1d1";
+    matrix_show(vkts1d1);
+    print "s1:";
+    matrix_show(s1);
+    print "d1:";
+    matrix_show(d1);
+
+    print "Deterministic Stage:";
+     
