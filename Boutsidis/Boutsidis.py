@@ -1,6 +1,12 @@
 #!/bin/python2
+import os;
+import sys;
+
+util_dir = os.path.split(os.path.realpath(__file__))[0]+"/../Python_Utils";
+sys.path.append(util_dir);
+
 from numpy import *;
-from CSS_Util import *;
+from Roulette import *;
 
 #def css(M,k):
 
@@ -17,16 +23,29 @@ def initial_stage(A, k):
     c0_square =  4 * 0.8 * 0.8 / Af / Af;
     print c0_square;
     c         =  1600 *  c0_square  *  k * math.log( 800 * c0_square * k ) / math.log(2);
+    c         =  int(ceil(c));
 
     return u,d,vt,p,c;
    
    
-def randomized_stage(A, k, p, c):
-    trials = int(ceil(a));
-    for t in xrange(trials):
+def randomized_stage(A, k, vt, p, c):
+    row,col = A.shape;
+    S1 = array([[0.0 for j in xrange(c)] for i in xrange(col)]);
+    D1 = array([[0.0 for j in xrange(c)] for i in xrange(col)]); 
+         
+
+    vkts1d1 = array([[0.0 for j in xrange(c)] for i in xrange(k)]);
+    for t in xrange(c):
         i = roulette_pick(p); 
-       
+        S1[i,t] = 1.0;
+        D1[t,t] = 1.0 / math.sqrt( c * p[i] );
+        for r in xrange(k):
+            vkts1d1[r,t] = vt[r,i] * D1[t,t];
 
 
-#def deterministic_stage(M):
+    return VktS1D1, S1, D1;
+
+
+def deterministic_stage(vts1d1,k):
+    
 
