@@ -42,4 +42,6 @@ if __name__ == "__main__":
     matrix_show(d1);
 
     print "Deterministic Stage:";
-     
+    s2 =  deterministic_stage(vkts1d1, k);
+    print "s2:";
+    matrix_show(s2);
