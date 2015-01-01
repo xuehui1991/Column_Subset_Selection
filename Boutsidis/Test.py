@@ -14,7 +14,7 @@ import numpy as np;
 if __name__ == "__main__":
     testM = array([[1,2,3,4],[0,2,3,4],[0,0,3,4],[0,0,3,4]]);
     testM = testM*5;
-    k     = 1;
+    k     = 2;
     u,d,vt = linalg.svd(testM);
     print "testM:";
     print testM;
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     print vt;
 
     print "Initialization Stage:";
-    u,d,vt,p,c =  initial_stage(testM, 2);
+    u,d,vt,p,c =  initial_stage(testM, k);
     print "p:";
     print p;
     print "c:";
