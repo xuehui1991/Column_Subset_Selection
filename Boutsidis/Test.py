@@ -5,15 +5,14 @@ util_dir = os.path.split(os.path.realpath(__file__))[0]+"/../utils/Python_Utils"
 sys.path.append(util_dir);
 
 
-from numpy import *;
 from Boutsidis import *;
 from Matrix_Utils import *;
 import numpy as np;
-
+np.random.seed(0);
 
 if __name__ == "__main__":
     testM = array([[1,2,3,4],[0,2,3,4],[0,0,3,4],[0,0,3,4]]);
-    testM = testM*5;
+    testM = np.random.random([100,100]);
     k     = 2;
     u,d,vt = linalg.svd(testM);
     print "testM:";
@@ -34,14 +33,26 @@ if __name__ == "__main__":
 
     print "Randomized Stage:";
     vkts1d1,s1,d1 = randomized_stage(testM, k, vt, p, c);
-    print "vkts1d1";
-    matrix_show(vkts1d1);
-    print "s1:";
-    matrix_show(s1);
-    print "d1:";
-    matrix_show(d1);
+    print "vkts1d1.shape";
+    f = open("data","w");
+    row,col = vkts1d1.shape;
+    for i in xrange(row):
+        for j in xrange(col):
+            f.write("%f\t"%vkts1d1[i,j]);
+        f.write("\n");
+    f.close();
+    print vkts1d1.shape;
+    print "s1.shape";
+    print s1.shape;
+    print "d1.shape";
+    print d1.shape;
 
     print "Deterministic Stage:";
     s2 =  deterministic_stage(vkts1d1, k);
-    print "s2:";
+    print "s2.shape:";
     matrix_show(s2);
+
+    print "css >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    C = css(testM,1);
+    matrix_show(C);
+        
