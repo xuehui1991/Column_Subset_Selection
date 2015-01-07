@@ -7,29 +7,37 @@ util_dir1 = os.path.split(os.path.realpath(__file__))[0] + "/../Python_Utils";
 sys.path.append(util_dir);
 sys.path.append(util_dir1);
 
-from Roulette import *;
+from Test_Utils import *;
+from Matrix_Utils import *;
+from WeiBi import *;
 import numpy as np;
 
-def css(R,k):
-    m,n = R.shape;
-    if k > n:
-        raise Exception("Weibi Algorithm requires k <= n, but k=%d, n=%d"%(k,n));    
+def test():
+    test_start_show();
+    k =2;
+    A = np.array([[1,2,3],[0,2,3],[0,0,3]]);
+    print "A";
+    matrix_show(A);
+    print "k=%d"%k;
+    C = css(A,k);
+    print "C:";
+    matrix_show(C);
 
-    u,d,vt = np.linalg.svd(R);
-    vtk    = vt[0:k, :];
-    
-    p      = array([0.0 for j in xrange(n)]);
-    for j in xrange(n):
-        for i in xrange(k):
-            p[j] += vtk[i,j] * vtk[i,j];
-        p[j] /= k;
-    
-    
-    C     = [];
-    Cdict = [0 for j in xrange(n)];
-    while len(C) < k:
-        i = roulette_pick(p);
-        if 0 ==  Cdict[i]:
-            Cdict[i] = 1;
-            C.append(i);
-    return C; 
+    Ak = matrix_Ak(A,k);
+    print "A%d"%k;
+    matrix_show(Ak);
+    error = A - Ak;
+    fro   = np.linalg.norm(error,'fro');
+    print "fro |A-Ak|";
+    print fro;    
+
+    AC = matrix_A_dot_PI(A,C);
+    PC = np.dot(AC,matrix_pinv(AC));
+    error = A - dot(PC,A);
+    fro   = np.linalg.norm(error,'fro');
+    print "fro |A-PcA|";
+    print fro;
+    test_end_show();   
+
+if __name__ == "__main__":
+    test();    

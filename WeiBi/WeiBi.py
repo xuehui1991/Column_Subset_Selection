@@ -32,4 +32,4 @@ def css(R,k):
         if 0 ==  Cdict[i]:
             Cdict[i] = 1;
             C.append(i);
-    return C; 
+    return array(C); 
