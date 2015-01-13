@@ -10,12 +10,14 @@ sys.path.append(util_dir);
 sys.path.append(rrqr_dir);
 sys.path
 
+from Matrix_Utils import *;
 from numpy import *;
 import Roulette;
 import StrongRRQR;
 
+is_debug = False;
 
-def initial_stage(A, k):
+def initial_stage(A, k, times=None):
     row,col = A.shape;
     u,d,vt  = linalg.svd(A); 
     p       = array([0.0 for i in xrange(col)]);
@@ -41,11 +43,18 @@ def initial_stage(A, k):
         #p[j] = p1[j]/2 + p2[j]/2;    
         p[j]  = p1[j];
 
-    Af        = linalg.norm(A,'fro');
-    c0_square =  1.0
-    c         =  1600 *  c0_square  *  k * math.log( 800 * c0_square * k ) / math.log(2);
-    c         =  int(ceil(c));
+    #Af        = linalg.norm(A,'fro');
+    #c in theory
+    #c0_square =  1.0
+    #c         =  1600 *  c0_square  *  k * math.log( 800 * c0_square * k ) / math.log(2);
+    #c         =  int(ceil(c));
 
+    #c in pratice
+    if None == times:
+        c = 6 * k;
+    else:
+        c = times * k;
+        c = int(ceil(c));
 
     return u,d,vt,p,c;
    
@@ -70,21 +79,36 @@ def deterministic_stage(vts1d1,k):
     row,col      = vts1d1.shape;
     hat          = zeros([col,col]);
     hat[0:row,:] = vts1d1;
-    R,S2         = StrongRRQR.rrqr(hat,k);
-
+    R,S2,k       = StrongRRQR.rrqr(hat,k);
+    
     return S2[0:k];
 
 
-def css(A, k):
+def css(A, k, times=None):
     m,n = A.shape;    
 
-    u,d,vt,p,c      =  initial_stage(A, k);
+    u,d,vt,p,c      =  initial_stage(A, k, times);
     vkts1d1, s1, d1 =  randomized_stage(A, k, vt, p, c);
-    s2              =  deterministic_stage(vkts1d1, k);
+    if True == is_debug: 
+        print "randomized_stage finishes";
+        print "s1:";
+        matrix_show(s1);
+
+    s2  =  deterministic_stage(vkts1d1, k);
+    if True == is_debug:
+        print "deterministic_stage finishes";
+        print "s2:";
+        matrix_show(s2);
     
-    C               =  zeros([1,k]);
+
+    C  =  array(range(k));
     for i in xrange(k):
         C[i] = s1[s2[i]];
+
+    if True == is_debug:
+        print "C";
+        matrix_show(C);
+
     return C;
                 
 

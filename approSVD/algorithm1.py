@@ -28,7 +28,7 @@ def choose(A, B, Lambda):
         if sigma > max_v:
             max_v = sigma;
             max_i = i;
-    return max_i;
+    return max_i,max_v;
 
 def normalize_column(A, Lambda = None,selected = None):
     m,n = A.shape;
@@ -69,7 +69,7 @@ def greedy(A, B, delta):
         matrix_show(Lambda);
         print ""
     while B_fro > delta:
-        max_j = choose(A, B, Lambda);
+        max_j,max_v = choose(A, B, Lambda);
         if -1 == max_j: 
             is_pass = False;
             break;
@@ -86,6 +86,7 @@ def greedy(A, B, delta):
         if is_debug:
             iter1 += 1;
             print "iter=%d>>>>>>>>>>>>>>>>>>>>>>>>"%iter1;
+            print "|BA|col = %f"%max_v;
             print "A";
             matrix_show(A);
             print "B";
@@ -136,7 +137,7 @@ def test():
     A = np.array([[1.0,2.0,3.0,4.0],[0.0,2.0,3.0,4.0],[0.0,0.0,3.0,4.0]]);
     B = np.copy(A);
     Lambda = array([0 for i in xrange(4)]);
-    i = choose(A,B,Lambda);
+    i,value = choose(A,B,Lambda);
     print "A";
     matrix_show(A);
     print "B";
