@@ -21,29 +21,12 @@ def initial_stage(A, k, times=None):
     row,col = A.shape;
     u,d,vt  = linalg.svd(A); 
     p       = array([0.0 for i in xrange(col)]);
-    p1      = array([0.0 for i in xrange(col)]);
     for j in xrange(col):
         for i in xrange(k):
-            p1[j] +=  vt[i,j]*vt[i,j];
-        p1[j] /= k;
+            p[j] +=  vt[i,j]*vt[i,j];
+        p[j] /= k;
 
-    d_lou_minus_k  = diag(d)[k:row,k:col];
-    vt_lou_minus_k = vt[k:row,:];
-    m              = dot(d_lou_minus_k, vt_lou_minus_k);
-    m_f            = linalg.norm(m,'fro');
-    m_f            = m_f * m_f;
-    p2             = array([0.0 for i in xrange(col)]);
   
-    for j in xrange(col):
-        for i in xrange(k,row):
-            p2[j] += m[i-k,j] * m[i-k,j];
-        p2[j] /= m_f;
- 
-    for j in xrange(col):
-        #p[j] = p1[j]/2 + p2[j]/2;    
-        p[j]  = p1[j];
-
-    #Af        = linalg.norm(A,'fro');
     #c in theory
     #c0_square =  1.0
     #c         =  1600 *  c0_square  *  k * math.log( 800 * c0_square * k ) / math.log(2);
