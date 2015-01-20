@@ -30,6 +30,20 @@ def choose(A, B, Lambda):
             max_i = i;
     return max_i,max_v;
 
+def choose_optimized(D):
+    max_p = -1;
+    max_v = -1;
+    m,n   = D.shape;
+    for j in xrange(n):
+        value = 0.0;
+        for i in xrange(m):
+            value += D[i,j] * D[i,j];
+        value = math.sqrt(value);
+        if value > max_v:
+            max_p = j;
+            max_v = value;
+    return max_p, max_v;
+
 def normalize_column(A, Lambda = None,selected = None):
     m,n = A.shape;
     if selected == None:    selected = 1;
@@ -48,14 +62,14 @@ def normalize_column(A, Lambda = None,selected = None):
 def greedy(A, B, delta):
     am,an   = A.shape;
     bm,bn   = B.shape;
+
     if am != bm:
         raise Exception("The greedy algorithm requires A.row = B.row, but A.row = %d B.row = %d"%(am,bm));
     Lambda  = np.array([0 for j in xrange(an)]);
     is_pass = True;
 
     A = normalize_column(A);
-    #B = normalize_column(B);   
- 
+
     B_fro  = np.linalg.norm(B,'fro');
     if is_debug:
         iter1 = 0;
@@ -81,6 +95,8 @@ def greedy(A, B, delta):
         for j in xrange(bn):
             B[:,j:j+1] -= np.dot(np.transpose(B[:,j:j+1]), A[:,max_j:max_j+1]) * A[:,max_j:max_j+1];
     
+        
+        
         A = normalize_column(A, Lambda, 0);
         B_fro = np.linalg.norm(B,'fro');   
         if is_debug:
