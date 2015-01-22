@@ -64,7 +64,8 @@ def greedy(A, B, delta):
     bm,bn   = B.shape;
 
     if am != bm:
-        raise Exception("The greedy algorithm requires A.row = B.row, but A.row = %d B.row = %d"%(am,bm));
+        raise Exception("The greedy algorithm requires A.row = B.row, \
+                        but A.row = %d B.row = %d"%(am,bm));
     Lambda  = np.array([0 for j in xrange(an)]);
     is_pass = True;
 
@@ -82,6 +83,8 @@ def greedy(A, B, delta):
         print "Lambda";
         matrix_show(Lambda);
         print ""
+
+
     while B_fro > delta:
         max_j,max_v = choose(A, B, Lambda);
         if -1 == max_j: 
@@ -90,18 +93,17 @@ def greedy(A, B, delta):
 
         Lambda[max_j] = 1;
         for j in xrange(an):
-            if 0 == Lambda[j]:
-                A[:,j:j+1] -=  np.dot(np.transpose(A[:,j:j+1]), A[:,max_j:max_j+1]) * A[:,max_j:max_j+1]  
+            if 0 != Lambda[j]: continue;
+            A[:,j:j+1] -= np.dot(np.transpose(A[:,j:j+1]), A[:,max_j:max_j+1]) * A[:,max_j:max_j+1]  
         for j in xrange(bn):
             B[:,j:j+1] -= np.dot(np.transpose(B[:,j:j+1]), A[:,max_j:max_j+1]) * A[:,max_j:max_j+1];
-    
-        
-        
+
+                
         A = normalize_column(A, Lambda, 0);
         B_fro = np.linalg.norm(B,'fro');   
         if is_debug:
             iter1 += 1;
-            print "iter=%d>>>>>>>>>>>>>>>>>>>>>>>>"%iter1;
+            print "iter=%d >>>>>>>>>>>>>>>>>>>>>>>>"%iter1;
             print "|BA|col = %f"%max_v;
             print "A";
             matrix_show(A);
