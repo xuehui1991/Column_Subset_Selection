@@ -17,10 +17,8 @@ def readdata(filename = "/home/ll/multi_label_data/delicious/train.y"):
     f = open(filename, "r");
     A = [];
     for line in f:
-        row  = [];
         eles = line.strip().split(" ");
-        for i in xrange(len(eles)):
-            row.append(float(eles[i])); #not row.append(int(eles[i]));
+        row  = map(float, eles);
         A.append(row);
     return np.array(A);
 
@@ -29,10 +27,11 @@ if __name__ == "__main__":
 
     test_start_show();
     A = readdata(); 
+    print "read data finishes";
     k = 100;
-    C = approsvd.css(A,k);
+    C = approsvd.css(A, k, 1.0);
  
-    Ak = matrix_Ak(A,k);
+    Ak = matrix_Ak(A, k);
     matrix_show(Ak);
     error = A - Ak;
     error_norm = np.linalg.norm(error, 'fro');

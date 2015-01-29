@@ -14,17 +14,21 @@ from Matrix_Utils import *;
 
 is_debug = False;
 
-def css(A, k, delta = 0.1):
+def css(A, k, delta = 1.0):
     greedy.is_debug = is_debug;
     m,n             = A.shape;
     if k > min(m,n):
         raise Exception("k must be <= min(m,n), but k=%d, m=%d, n=%d"%(k,m,n));
 
+    if is_debug:
+        print "svd starts";
     u,d,vt = np.linalg.svd(A);
     target = u[:,0:k];
     for i in xrange(k):
         target[:,i:i+1] = d[i] * target[:,i:i+1];
- 
+    if is_debug:
+        print "svd ends"; 
+
     isPass, Lambda = greedy.greedy(A, target, delta);
     
     C   = [];
