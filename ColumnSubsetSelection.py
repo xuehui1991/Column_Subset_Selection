@@ -106,7 +106,7 @@ def css(A, opts):
 
 if __name__ == "__main__":
     matrix_filename, output_filename, opts = parseParameter(sys.argv);
-    Logger.initlog(opts);
+    Logger.initlog(opts, "Column_Subset_Selection");
     Logger.instance.info("matrix_file [%s]"%matrix_filename);
     Logger.instance.info("output_file [%s]"%output_filename);
     if not os.path.exists(matrix_filename):
