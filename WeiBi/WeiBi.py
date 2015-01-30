@@ -2,29 +2,33 @@
 import os;
 import sys;
 
-util_dir  = os.path.split(os.path.realpath(__file__))[0] + "/../utils/Python_Utils";
-util_dir1 = os.path.split(os.path.realpath(__file__))[0] + "/../Python_Utils";
-sys.path.append(util_dir);
-sys.path.append(util_dir1);
+path      = os.path.split(os.path.realpath(__file__))[0];
+sys.path.append(path + "/../utils/Python_Utils");
+sys.path.append(path + "/../Python_Utils");
+
 
 from Roulette import *;
 import numpy as np;
+import Logger;
 
 def css(R,k):
     m,n = R.shape;
     if k > n:
         raise Exception("Weibi Algorithm requires k <= n, but k=%d, n=%d"%(k,n));    
 
+    Logger.instance.info("Algorithm starts");
+    Logger.instance.info("SVD starts");
     u,d,vt = np.linalg.svd(R);
     vtk    = vt[0:k, :];
+    Logger.instance.info("SVD ends");
     
     p      = array([0.0 for j in xrange(n)]);
     for j in xrange(n):
-        for i in xrange(k):
-            p[j] += vtk[i,j] * vtk[i,j];
+        p[j]  = np.linalg.norm(vt[0:k,j:j+1]);
+        p[j] *= p[j];
         p[j] /= k;
-    
-    
+    Logger.instance.info("Probabilities calculation ends");
+     
     C     = [];
     Cdict = [0 for j in xrange(n)];
     while len(C) < k:
@@ -32,4 +36,6 @@ def css(R,k):
         if 0 ==  Cdict[i]:
             Cdict[i] = 1;
             C.append(i);
-    return array(C); 
+    Logger.instance.info("Algorithm ends");
+
+    return np.array(C); 

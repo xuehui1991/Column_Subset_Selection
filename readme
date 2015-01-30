@@ -1,0 +1,8 @@
+-t type: set type of column subset selection problem.    
+CS. The column subset selection algorithm selects some columns (the number depends on the \epsilon), such that
+            ||A-P_CA||_F \le (1+\epsilon) ||A-A_k||_F.
+Aiming at this case, we should provides two parameters, k and \epsilon.
+
+ES. The column subset selection algorithm selects k columns, such that
+            ||A_P_CA||_F \le p(k) ||A-A_k||_F.
+where p(k) is polynomial funciont of k. Aiming at this case, we should provies k.
