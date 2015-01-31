@@ -125,7 +125,7 @@ def css(A, opts):
 
 if __name__ == "__main__":
     matrix_filename, output_filename, opts = parseParameter(sys.argv);
-    Logger.initlog(opts);
+    Logger.initlog(opts, "Column_Subset_Selection");
     Logger.instance.info("k = %d"%opts["k"]);
     if "e" in opts:
         Logger.instance.info("epsilon = %f"%opts["e"]);
