@@ -16,7 +16,6 @@ def css(R,k):
     if k > n:
         raise Exception("Weibi Algorithm requires k <= n, but k=%d, n=%d"%(k,n));    
 
-    Logger.instance.info("Algorithm starts");
     Logger.instance.info("SVD starts");
     u,d,vt = np.linalg.svd(R);
     vtk    = vt[0:k, :];
@@ -36,6 +35,5 @@ def css(R,k):
         if 0 ==  Cdict[i]:
             Cdict[i] = 1;
             C.append(i);
-    Logger.instance.info("Algorithm ends");
 
     return np.array(C); 

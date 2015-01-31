@@ -2,35 +2,31 @@
 import os;
 import sys;
 
-util_dir  = os.path.split(os.path.realpath(__file__))[0] + "/../utils/Python_Utils";
-util_dir1 = os.path.split(os.path.realpath(__file__))[0] + "/../Python_Utils";
-sys.path.append(util_dir);
-sys.path.append(util_dir1);
+path      = os.path.split(os.path.realpath(__file__))[0];
+sys.path.append(path + "/../utils/Python_Utils");
+sys.path.append(path + "/../Python_Utils");
 
-
+from Matrix_Utils import *;
 import numpy      as np;
 import algorithm1 as greedy;
-from Matrix_Utils import *;
+import Logger;
 
-is_debug = False;
-
-def css(A, k, delta = 1.0):
-    greedy.is_debug = is_debug;
+def css(A, k, epsilon = 0.1):
     m,n             = A.shape;
     if k > min(m,n):
         raise Exception("k must be <= min(m,n), but k=%d, m=%d, n=%d"%(k,m,n));
 
-    if is_debug:
-        print "svd starts";
+    Logger.instance.info("svd starts");
     u,d,vt = np.linalg.svd(A);
     target = u[:,0:k];
     for i in xrange(k):
-        target[:,i:i+1] = d[i] * target[:,i:i+1];
-    if is_debug:
-        print "svd ends"; 
+        target[:,i:i+1] = d[i] * target[:,i:i+1];    
+    Logger.instance.info("svd ends");
 
-    isPass, Lambda = greedy.greedy(A, target, delta);
-    
+    Ak   = np.dot(target, vt[0:k,:]);
+    norm = np.linalg.norm(A - Ak, 'fro'); 
+
+    isPass, Lambda = greedy.greedy(A, target, epsilon * norm);
     C   = [];
     for i in xrange(len(Lambda)):
         if True == Lambda[i]:

@@ -6,7 +6,9 @@ sys.path.append(path + "/utils");
 sys.path.append(path + "/utils/Python_Utils");
 sys.path.append(path + "/utils/Python_Utils");
 sys.path.append(path + "/WeiBi");
-
+sys.path.append(path + "/Drineas2006");
+sys.path.append(path + "/approSVD");
+sys.path.append(path + "/Eval");
 
 from Matrix_Utils import *;
 from Test_Utils   import *;
@@ -17,6 +19,12 @@ random.seed(0);
 import Logger;
 
 
+type_algorithm_str   = [["" for i in xrange(1)],\
+                        ["" for i in xrange(2)]];
+type_algorithm_str[0][0] = "WeiBi et al, ICML2013, Efficient Multi-label Classification with Many Labels"
+type_algorithm_str[1][0] = "Drineas et al, 2006, Subspace Sampling and Relative Error Approximation: Column-based Method, Expect Algorithm";
+type_algorithm_str[1][1] = "A.Civril and M.Magdon-Ismail, 2012, Column Subset Selection via Sparse Aprroximation of SVD";
+
 def printUsages():
     print "Usage: ColumnSubsetSelection.py [options] matrix_file output_file";
     print "options:"
@@ -25,15 +33,15 @@ def printUsages():
     print "      1 -- ES (epsilon is specified)";
 
     print "-a algorithm : set algorithm (default 0)"
-    print "   for number of columns specified";
-    print "      0 -- WeiBi et al, ICML2013, Efficient Multi-label Classification with Many Labels";
-    print "   for epsilon is specified";
-    print "      0 -- Drineas et al, 2006, Subspace Sampling and Relative Error Approximation: Column-based Method, Exact Algorithm";
-    print "      1 -- Drineas et al, 2006, Subspace Sampling and Relative Error Approximation: Column-based Method, Expect Algorithm";
+    print "   for number of columns specified (NS) ";
+    print "      0 -- %s"%type_algorithm_str[0][0];
+    print "   for epsilon is specified (ES)";
+    print "      0 -- %s"%type_algorithn_str[0][0];
+    print "      1 -- %s"%type_algorithm_str[1][1];
     print "-k the number of columns selected";
     print "-e the epsilon";
-    print "-log the log file (if not specified, write log information to stderr)";
-    print "-level the level of log (default the info level)";
+    print "-log log_file (if not specified, write log information to stderr)";
+    print "-level log_level (default the info level)";
     print "      debug -- the debug level";
     print "      info  -- the info level";
 
@@ -58,6 +66,8 @@ def parseParameter(args):
             dicts["a"] = int(args[i+1]);
         elif "-k" == args[i]:
             dicts["k"] = int(args[i+1]);
+        elif "-e" == args[i]:
+            dicts["e"] = float(args[i+1]);
         else:
             printUsages();
             exit(1);
@@ -84,38 +94,52 @@ def write_result(C, filename):
     try:f = open(filename, "w");
     except:
         logger.waring("fail to open %s as output_file, \
-                        store the result to ./result"%filename);
+        store the result to ./result"%filename);
         f = open("./result", "w");
 
-    f.write("The selected columns (start from 0):");
     for j in xrange(len(C)):
-        f.write("%d\t"%C[j]);
+        f.write("%d "%C[j]);
     f.write("\n");
 
+
 def css(A, opts):
+    C = [];
     if   0  == opts["t"] and 0  == opts["a"]:
         import WeiBi;
-        k = opts["k"];
-        C = WeiBi.css(A, k);
-        return C;
+        k  = opts["k"];
+        C  = WeiBi.css(A, k);
     elif 1  == opts["t"] and 0  == opts["a"]:
-        print "b";
+        import Expected;
+        k  = opts["k"];
+        e  = opts["e"];
+        C  = Expected.css(A, k, e);
+    elif 1  == opts["t"] and 1  == opts["a"]:
+        import approSVD;
+        k  = opts["k"];
+        e  = opts["e"];
+        C  = approSVD.css(A, k, e);
     else:
         Logger.instance.error("Not supported type=%d and algorithm=%d"%(opts["t"], opts["a"]));
         exit(1);
+    return C;
 
 if __name__ == "__main__":
     matrix_filename, output_filename, opts = parseParameter(sys.argv);
     Logger.initlog(opts);
-    Logger.instance.info("matrix_file [%s]"%matrix_filename);
-    Logger.instance.info("output_file [%s]"%output_filename);
+    Logger.instance.info("k = %d"%opts["k"]);
+    if "e" in opts:
+        Logger.instance.info("epsilon = %f"%opts["e"]);
+    Logger.instance.info("matrix_file [ %s ]"%matrix_filename);
+    Logger.instance.info("output_file [ %s ]"%output_filename);
     if not os.path.exists(matrix_filename):
-        Logger.instance.error("matrix_file [%s] not exists"%matrix_filename);
+        Logger.instance.error("matrix_file [ %s ] not exists"%matrix_filename);
         exit(1);
+
 
     Logger.instance.info("data reading starts");
     A = read_matrix(matrix_filename);
+    Logger.instance.info("Column Subset Selection starts");
     C = css(A, opts);
     write_result(C, output_filename);
-    
+    Logger.instance.info("Column Subset Selection completes. ");
     

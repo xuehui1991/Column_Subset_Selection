@@ -2,24 +2,23 @@
 import os;
 import sys;
 
-util_dir  = os.path.split(os.path.realpath(__file__))[0] + "/../utils/Python_Utils";
-util_dir1 = os.path.split(os.path.realpath(__file__))[0] + "/../Python_Utils";
-sys.path.append(util_dir);
-sys.path.append(util_dir1);
+path      = os.path.split(os.path.realpath(__file__))[0];
+sys.path.append(path + "/../utils/Python_Utils");
+sys.path.append(path + "/../Python_Utils");
 
 from Matrix_Utils import *;
 from Roulette     import *;
 import math;
 import numpy as np;
+import Logger;
 
-is_debug = False;
 
 def eval(A, C):
     PC   = matrix_A_dot_PI(A, C);
     diff = A - np.dot(np.dot(PC, np.linalg.pinv(PC)), A);
     return np.linalg.norm(diff, 'fro');
 
-def css(R, k, epsilon, delta):
+def css(R, k, epsilon, delta = 0.5):
     m,n = R.shape;
     if k > n:
         raise Exception("CSSP requires k <= n, but k=%d, n=%d"%(k,n));    
@@ -30,8 +29,7 @@ def css(R, k, epsilon, delta):
     c    = k * k * math.log( 1/delta) /epsilon / epsilon;
     for iter1 in xrange(num):
 
-        if is_debug == True:
-            print "iter %d >>>>>>>>",iter1;
+        Logger.instance.debug("iter %d >>>>>>>>",iter1);
     
         u,d,vt = np.linalg.svd(R);
         p      = array([0.0 for j in xrange(n)]);
@@ -46,10 +44,12 @@ def css(R, k, epsilon, delta):
             C.append(i);
         C  = np.array(C);
     
-        value = eval(R, C);
-        if value < Vmin:
-            Vmin = value;
-            Cmin = C;            
-
+        if 1 == num:
+            Cmin = 1;
+        else:
+            value = eval(R, C);
+            if value < Vmin:
+                Vmin = value;
+                Cmin = C;            
 
     return Cmin;

@@ -17,7 +17,7 @@ def eval(A, C):
     diff = A - np.dot(np.dot(PC, np.linalg.pinv(PC)), A);
     return np.linalg.norm(diff, 'fro');
 
-def css(R, k, epsilon, delta):
+def css(R, k, epsilon, delta = 0.5): ##default delta = 0.5, num = 1;
     m,n = R.shape;
     if k > n:
         raise Exception("CSSP requires k <= n, but k=%d, n=%d"%(k,n));    
@@ -46,9 +46,12 @@ def css(R, k, epsilon, delta):
             Cdict[i] = 1;
         C = np.array(C);
 
-        value = eval(R, C);
-        if value < Vmin:
-            Vmin = value;
-            Cmin = C;         
+        if 1 == num:
+            Cmin = C;
+        else:
+            value = eval(R, C);
+            if value < Vmin:
+                Vmin = value;
+                Cmin = C;         
 
     return Cmin;
