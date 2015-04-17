@@ -1,6 +1,7 @@
 #!/bin/python
 import sys;
 import os;
+lili = 0
 path      = os.path.split(os.path.realpath(__file__))[0];
 sys.path.append(path + "/utils");
 sys.path.append(path + "/utils/Python_Utils");
